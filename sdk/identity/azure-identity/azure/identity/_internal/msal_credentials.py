@@ -6,12 +6,14 @@
 This entails monkeypatching MSAL's OAuth client with an adapter substituting an azure-core pipeline for Requests.
 """
 import abc
+import json
 import logging
 import os
 import sys
 import time
 
 import msal
+from six.moves.urllib_parse import urlparse
 from azure.core.credentials import AccessToken
 from azure.core.exceptions import ClientAuthenticationError
 
@@ -32,11 +34,29 @@ except ImportError:
 
 if TYPE_CHECKING:
     # pylint:disable=ungrouped-imports,unused-import
-    from typing import Any, Mapping, Optional, Type, Union
+    from typing import Any, Mapping, Optional, Tuple, Type, Union
     from azure.core.credentials import TokenCredential
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _build_auth_profile(response):
+    """Build an AuthProfile from the result of an MSAL ClientApplication token request"""
+
+    try:
+        client_info = json.loads(msal.oauth2cli.oidc.decode_part(response["client_info"]))
+        id_token = response["id_token_claims"]
+
+        return AuthProfile(
+            environment=urlparse(id_token["iss"]).netloc,  # "iss" is the URL of the issuing tenant
+            home_account_id="{uid}.{utid}".format(**client_info),
+            tenant_id=id_token["tid"],  # tenant which issued the token, not necessarily user's home tenant
+            username=id_token["preferred_username"],
+        )
+    except (KeyError, ValueError):
+        # ClientApplication always requests client_info and id token, whose shapes shouldn't change; this is surprising
+        return None
 
 
 def _account_matches_profile(account, profile):

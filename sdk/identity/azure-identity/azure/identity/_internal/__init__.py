@@ -33,6 +33,8 @@ def _scopes_to_resource(*scopes):
     return resource
 
 
+ARM_SCOPE = "https://management.azure.com/.default"
+
 __all__ = [
     "AadClient",
     "AadClientBase",
