@@ -5,7 +5,7 @@
 """Credentials for Azure SDK clients."""
 
 from ._auth_profile import AuthProfile
-from ._exceptions import CredentialUnavailableError
+from ._exceptions import AuthenticationRequiredError, CredentialUnavailableError
 from ._constants import KnownAuthorities
 from ._credentials import (
     AuthorizationCodeCredential,
@@ -23,6 +23,7 @@ from ._credentials import (
 
 
 __all__ = [
+    "AuthenticationRequiredError",
     "AuthProfile",
     "AuthorizationCodeCredential",
     "CertificateCredential",
