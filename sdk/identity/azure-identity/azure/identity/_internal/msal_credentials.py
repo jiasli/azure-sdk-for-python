@@ -90,7 +90,7 @@ class MsalCredential(ABC):
             tenant_id = self._profile.tenant_id
         else:
             authority = kwargs.pop("authority", None) or get_default_authority()
-            tenant_id = kwargs.pop("tenant_id", "organizations")
+            tenant_id = kwargs.pop("tenant_id", None) or "organizations"
 
         self._base_url = "https://" + "/".join((authority.strip("/"), tenant_id.strip("/")))
         self._client_credential = client_credential
